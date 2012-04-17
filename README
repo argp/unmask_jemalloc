@@ -1,0 +1,152 @@
+unmask_jemalloc - De Mysteriis Dom jemalloc
+
+A gdb/Python extension to unmask and bring to light the internals of the
+various jemalloc flavors.  This utility is based on argp's and huku's
+Phrack paper on exploiting jemalloc:
+
+http://phrack.org/issues.html?issue=68&id=10#article
+
+The following is a sample run of unmask_jemalloc on Firefox 11.0 on
+Linux x86 (Debian):
+
+$ ./firefox-bin &
+
+$ gdb -x ./gdbinit -p `ps x | grep firefox | grep -v grep \
+| grep -v debug | awk '{print $1}'`
+
+GNU gdb (GDB) 7.4-debian
+...
+Attaching to process 3493
+add symbol table from file "/dbg/firefox-latest-symbols/firefox-bin.dbg" at
+    .text_addr = 0x80494b0
+add symbol table from file "/dbg/firefox-latest-symbols/libxul.so.dbg" at
+    .text_addr = 0xb5b9a9d0
+...
+[Thread 0xa4ffdb70 (LWP 3533) exited]
+[Thread 0xa57feb70 (LWP 3537) exited]
+[New Thread 0xa57feb70 (LWP 3556)]
+[Thread 0xa57feb70 (LWP 3556) exited]
+
+gdb $ source unmask_jemalloc.py
+gdb $ unmask_jemalloc runs
+
+[jemalloc] [number of arenas:       1]
+[jemalloc] [number of bins:         24]
+[jemalloc] [no magazines/thread caches detected]
+
+[jemalloc] [arena #00] [bin #00] [region size: 0x0004] [current run at: 0xa52d9000]
+[jemalloc] [arena #00] [bin #01] [region size: 0x0008] [current run at: 0xa37c8000]
+[jemalloc] [arena #00] [bin #02] [region size: 0x0010] [current run at: 0xa372c000]
+[jemalloc] [arena #00] [bin #03] [region size: 0x0020] [current run at: 0xa334d000]
+[jemalloc] [arena #00] [bin #04] [region size: 0x0030] [current run at: 0xa3347000]
+[jemalloc] [arena #00] [bin #05] [region size: 0x0040] [current run at: 0xa334a000]
+[jemalloc] [arena #00] [bin #06] [region size: 0x0050] [current run at: 0xa3732000]
+[jemalloc] [arena #00] [bin #07] [region size: 0x0060] [current run at: 0xa3701000]
+[jemalloc] [arena #00] [bin #08] [region size: 0x0070] [current run at: 0xa3810000]
+[jemalloc] [arena #00] [bin #09] [region size: 0x0080] [current run at: 0xa3321000]
+[jemalloc] [arena #00] [bin #10] [region size: 0x00f0] [current run at: 0xa57c7000]
+[jemalloc] [arena #00] [bin #11] [region size: 0x0100] [current run at: 0xa37e9000]
+[jemalloc] [arena #00] [bin #12] [region size: 0x0110] [current run at: 0xa5a9b000]
+[jemalloc] [arena #00] [bin #13] [region size: 0x0120] [current run at: 0xa56ea000]
+[jemalloc] [arena #00] [bin #14] [region size: 0x0130] [current run at: 0xa3709000]
+[jemalloc] [arena #00] [bin #15] [region size: 0x0140] [current run at: 0xa382c000]
+[jemalloc] [arena #00] [bin #16] [region size: 0x0150] [current run at: 0xa39da000]
+[jemalloc] [arena #00] [bin #17] [region size: 0x0160] [current run at: 0xa56ee000]
+[jemalloc] [arena #00] [bin #18] [region size: 0x0170] [current run at: 0xa3849000]
+[jemalloc] [arena #00] [bin #19] [region size: 0x0180] [current run at: 0xa3a21000]
+[jemalloc] [arena #00] [bin #20] [region size: 0x01f0] [current run at: 0xafc51000]
+[jemalloc] [arena #00] [bin #21] [region size: 0x0200] [current run at: 0xa3751000]
+[jemalloc] [arena #00] [bin #22] [region size: 0x0400] [current run at: 0xa371d000]
+[jemalloc] [arena #00] [bin #23] [region size: 0x0800] [current run at: 0xa370d000]
+
+[jemalloc] [run 0xa3347000] [from 0xa3347000 to 0xa3348000L] 
+[jemalloc] [run 0xa371d000] [from 0xa371d000 to 0xa3725000L] 
+[jemalloc] [run 0xa3321000] [from 0xa3321000 to 0xa3323000L] 
+[jemalloc] [run 0xa334a000] [from 0xa334a000 to 0xa334b000L] 
+[jemalloc] [run 0xa370d000] [from 0xa370d000 to 0xa3715000L] 
+[jemalloc] [run 0xa3709000] [from 0xa3709000 to 0xa370d000L] 
+[jemalloc] [run 0xa37c8000] [from 0xa37c8000 to 0xa37c9000L] 
+[jemalloc] [run 0xa5a9b000] [from 0xa5a9b000 to 0xa5a9f000L] 
+[jemalloc] [run 0xa3a21000] [from 0xa3a21000 to 0xa3a27000L] 
+[jemalloc] [run 0xa382c000] [from 0xa382c000 to 0xa3831000L] 
+[jemalloc] [run 0xa3701000] [from 0xa3701000 to 0xa3702000L] 
+[jemalloc] [run 0xa57c7000] [from 0xa57c7000 to 0xa57ca000L] 
+[jemalloc] [run 0xa56ee000] [from 0xa56ee000 to 0xa56f3000L] 
+[jemalloc] [run 0xa39da000] [from 0xa39da000 to 0xa39df000L] 
+[jemalloc] [run 0xa37e9000] [from 0xa37e9000 to 0xa37ed000L] 
+[jemalloc] [run 0xa3810000] [from 0xa3810000 to 0xa3812000L] 
+[jemalloc] [run 0xa3751000] [from 0xa3751000 to 0xa3759000L] 
+[jemalloc] [run 0xafc51000] [from 0xafc51000 to 0xafc58000L] 
+[jemalloc] [run 0xa334d000] [from 0xa334d000 to 0xa334e000L] 
+[jemalloc] [run 0xa372c000] [from 0xa372c000 to 0xa372d000L] 
+[jemalloc] [run 0xa52d9000] [from 0xa52d9000 to 0xa52da000L] 
+[jemalloc] [run 0xa56ea000] [from 0xa56ea000 to 0xa56ee000L] 
+[jemalloc] [run 0xa3732000] [from 0xa3732000 to 0xa3733000L] 
+[jemalloc] [run 0xa3849000] [from 0xa3849000 to 0xa384e000L] 
+
+There is also preliminary support for Mac OS X (x86_64), tested on Lion
+10.7.3 with Firefox 11.0. Also, note that Apple's gdb does not have Python
+support, so the following was obtained with a custom-compiled gdb:
+
+$ open firefox-11.0.app
+
+$ gdb -nx -x ./gdbinit -p 837
+
+...
+Attaching to process 837
+[New Thread 0x2003 of process 837]
+[New Thread 0x2103 of process 837]
+...
+[New Thread 0x2e03 of process 837]
+Reading symbols from
+/dbg/firefox-11.0.app/Contents/MacOS/firefox...done
+Reading symbols from
+/dbg/firefox-11.0.app/Contents/MacOS/firefox.dSYM/
+Contents/Resources/DWARF/firefox...done.
+0x00007fff8636b67a in ?? () from /usr/lib/system/libsystem_kernel.dylib
+(gdb) source unmask_jemalloc.py
+(gdb) unmask_jemalloc
+
+[jemalloc] [number of arenas:       1]
+[jemalloc] [number of bins:         35]
+[jemalloc] [no magazines/thread caches detected]
+
+[jemalloc] [arena #00] [bin #00] [region size: 0x0008] [current run at: 0x108fe0000]
+[jemalloc] [arena #00] [bin #01] [region size: 0x0010] [current run at: 0x1003f5000]
+[jemalloc] [arena #00] [bin #02] [region size: 0x0020] [current run at: 0x1003bc000]
+[jemalloc] [arena #00] [bin #03] [region size: 0x0030] [current run at: 0x1003d7000]
+[jemalloc] [arena #00] [bin #04] [region size: 0x0040] [current run at: 0x1054c6000]
+[jemalloc] [arena #00] [bin #05] [region size: 0x0050] [current run at: 0x103652000]
+[jemalloc] [arena #00] [bin #06] [region size: 0x0060] [current run at: 0x110c9c000]
+[jemalloc] [arena #00] [bin #07] [region size: 0x0070] [current run at: 0x106bef000]
+[jemalloc] [arena #00] [bin #08] [region size: 0x0080] [current run at: 0x10693b000]
+[jemalloc] [arena #00] [bin #09] [region size: 0x0090] [current run at: 0x10692e000]
+[jemalloc] [arena #00] [bin #10] [region size: 0x00a0] [current run at: 0x106743000]
+[jemalloc] [arena #00] [bin #11] [region size: 0x00b0] [current run at: 0x109525000]
+[jemalloc] [arena #00] [bin #12] [region size: 0x00c0] [current run at: 0x1127c2000]
+[jemalloc] [arena #00] [bin #13] [region size: 0x00d0] [current run at: 0x106797000]
+[jemalloc] [arena #00] [bin #14] [region size: 0x00e0] [current run at: 0x109296000]
+[jemalloc] [arena #00] [bin #15] [region size: 0x00f0] [current run at: 0x110aa9000]
+[jemalloc] [arena #00] [bin #16] [region size: 0x0100] [current run at: 0x106c70000]
+[jemalloc] [arena #00] [bin #17] [region size: 0x0110] [current run at: 0x109556000]
+[jemalloc] [arena #00] [bin #18] [region size: 0x0120] [current run at: 0x1092bf000]
+[jemalloc] [arena #00] [bin #19] [region size: 0x0130] [current run at: 0x1092a2000]
+[jemalloc] [arena #00] [bin #20] [region size: 0x0140] [current run at: 0x10036a000]
+[jemalloc] [arena #00] [bin #21] [region size: 0x0150] [current run at: 0x100353000]
+[jemalloc] [arena #00] [bin #22] [region size: 0x0160] [current run at: 0x1093d3000]
+[jemalloc] [arena #00] [bin #23] [region size: 0x0170] [current run at: 0x10f024000]
+[jemalloc] [arena #00] [bin #24] [region size: 0x0180] [current run at: 0x106b58000]
+[jemalloc] [arena #00] [bin #25] [region size: 0x0190] [current run at: 0x10f002000]
+[jemalloc] [arena #00] [bin #26] [region size: 0x01a0] [current run at: 0x10f071000]
+[jemalloc] [arena #00] [bin #27] [region size: 0x01b0] [current run at: 0x109139000]
+[jemalloc] [arena #00] [bin #28] [region size: 0x01c0] [current run at: 0x1091c6000]
+[jemalloc] [arena #00] [bin #29] [region size: 0x01d0] [current run at: 0x10032a000]
+[jemalloc] [arena #00] [bin #30] [region size: 0x01e0] [current run at: 0x1054f9000]
+[jemalloc] [arena #00] [bin #31] [region size: 0x01f0] [current run at: 0x10034c000]
+[jemalloc] [arena #00] [bin #32] [region size: 0x0200] [current run at: 0x106739000]
+[jemalloc] [arena #00] [bin #33] [region size: 0x0400] [current run at: 0x106c68000]
+[jemalloc] [arena #00] [bin #34] [region size: 0x0800] [current run at: 0x10367e000]
+
+unmask_jemalloc is spaghetti code full of heuristics and (black) magic
+numbers.  Feel free to untangle it and bind its demons by submitting
+patches.
