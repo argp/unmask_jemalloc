@@ -6,7 +6,7 @@
 try:
     import gdb
 except ImportError:
-    print '[unmask_jemalloc] this only usable from within gdb'
+    print '[unmask_jemalloc] this is only usable from within gdb'
     exit()
 
 import sys
