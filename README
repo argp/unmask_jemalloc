@@ -10,6 +10,15 @@ our Phrack paper on exploiting jemalloc:
 
 http://phrack.org/issues.html?issue=68&id=10#article
 
+The original slide deck from our Black USA 2012 presentation is available
+at:
+
+https://www.blackhat.com/html/bh-us-12/bh-us-12-archives.html#Argyroudis
+
+The updated slide deck is at:
+
+http://census-labs.com/news/2012/08/03/blackhat-usa-2012-update/
+
 We have extensively tested unmask_jemalloc with various versions of Mozilla
 Firefox (including the latest release at the time of this writing, 13.0.1)
 on Mac OS X (x86_64) and Linux (both x86 and x86_64).
@@ -46,5 +55,5 @@ https://github.com/argp/unmask_jemalloc
 
 Feel free to contribute!
 
-argp & huku, Tue Jul 10 10:03:30 EEST 2012
+argp & huku, Mon Aug 6 13:11:20 EEST 2012
 
