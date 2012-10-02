@@ -18,7 +18,7 @@ VERSION = 'v0.666 (bh-usa-2012)'
 class jemalloc:
 
     def __init__(self, chunks = [], chunk_size = 0, \
-        arenas = [], narenas = 0, nbins = 0, \
+        arenas = [], narenas = 0, runs = [], nbins = 0, \
         magrack_size = 0, magaz_flag = false, \
         standalone_flag = false):
 
@@ -29,6 +29,7 @@ class jemalloc:
         self.nbins = nbins
         self.magrack_size = magrack_size
         self.DWORD_SIZE = gdbutil.get_dword_size()
+        self.runs = runs
 
         self.MAGAZINES = magaz_flag
         self.STANDALONE = standalone_flag
@@ -36,12 +37,12 @@ class jemalloc:
     def __str__(self):
 
         if self.MAGAZINES == false:
-            return '[unmask_jemalloc] [jemalloc] [arenas %02d] [bins %02d]' % \
-                (self.narenas, self.nbins)
+            return '[unmask_jemalloc] [jemalloc] [arenas %02d] [bins %02d]' \
+                   ' [runs %02d]' % (self.narenas, self.nbins, len(self.runs))
         else:
             return '[unmask_jemalloc] [jemalloc] [arenas %02d] [bins %02d] ' \
-                   '[magazine rack/tcache size %04d]' % \
-                    (self.narenas, self.nbins, self.magrack_size)
+                   '[runs %02d] [magazine rack/tcache size %04d]' % \
+                    (self.narenas, self.nbins, len(self.runs), self.magrack_size)
 
 class arena_chunk:
 

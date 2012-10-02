@@ -175,6 +175,81 @@ def jeparse_arenas():
         jeheap.arenas.append(current_arena)
 
 
+# parse the metadata of all runs and their regions
+def jeparse_all_runs(proc):
+    global jeheap
+
+    # number of pages a chunk occupies
+    chunk_npages = jeheap.chunk_size >> 12
+
+    # offset of bits in arena_chunk_map_t in double words
+    bitmap_offset = \
+        gdbutil.offsetof('arena_chunk_map_t', 'bits') / jeheap.DWORD_SIZE
+
+    # number of double words occupied by an arena_chunk_map_t
+    chunk_map_dwords = \
+        (bitmap_offset / jeheap.DWORD_SIZE) + 1
+
+    # prefix to use in gdb's examine command
+    if jeheap.DWORD_SIZE == 8:
+        dword_fmt = 'g'
+    else:
+        dword_fmt = 'w'
+
+    # the 12 least significant bits of each bitmap entry hold
+    # various flags for the corresponding run
+    flags_mask = (1 << 12) - 1
+
+    # delete the heap's runs' array
+    jeheap.runs[:] = []
+
+    for chunk in jeheap.chunks:
+        if not chunk.arena:
+            continue
+
+        try:
+            # parse the whole map at once to avoid gdb delays
+            expr = 'x/%d%sx ((arena_chunk_t *)%#x)->map' % \
+                (chunk_npages * chunk_map_dwords, dword_fmt, chunk.addr)
+        except:
+            print '[unmask_jemalloc] error: cannot read bitmap from chunk %#x' (chunk.addr)
+            sys.exit()
+
+        lines = (gdb.execute(expr, to_string = true)).split('\n')
+
+        dwords = []
+        for line in lines:
+            dwords += [int(dw, 16) for dw in line[line.find(':') + 1:].split()]
+
+        bitmap = [dwords[i] for i in range(bitmap_offset, len(dwords), bitmap_offset + 1)]
+
+        # traverse the bitmap
+        for mapelm in bitmap:
+            flags = mapelm & flags_mask
+
+            # flags == 1 means the chunk is small and the rest of the bits
+            # hold the actual run address
+            if flags == 1:
+                addr = mapelm & ~flags_mask
+                size = gdbutil.get_page_size()
+
+            # flags = 3 indicates a large chunk; calculate the run's address
+            # directly from the map element index and extract the run's size 
+            elif flags == 3:
+                addr = chunk.addr + i * gdbutil.get_page_size()
+                size = mapelm & ~flags_mask
+
+            # run is not allocated? skip it
+            else:
+                continue
+    
+            if addr not in [a for (a, s) in runs]:
+                # XXX: we need to parse run headers here with a
+                #      dedicated function
+                new_run = jemalloc.arena_run(addr, 0, size, 0, 0, 0, 0, 0, [])
+                jeheap.runs.append(new_run)
+    
+
 # parse metadata of current runs and their regions
 def jeparse_runs(proc):
     global jeheap
@@ -335,6 +410,7 @@ def jeparse(proc):
     jeparse_general()
     jeparse_arenas()
     jeparse_runs(proc)
+    jeparse_all_runs(proc)
     jeparse_chunks()
 
     parsed = true
@@ -513,76 +589,14 @@ class jemalloc_runs(gdb.Command):
                     print jeheap.arenas[i].bins[j].run
 
         else:
-            print '[unmask_jemalloc] searching for all allocated runs'
+            print '[unmask_jemalloc] listing all allocated runs'
 
-            # number of pages a chunk occupies
-            chunk_npages = jeheap.chunk_size >> 12
-    
-            # offset of `bits' in `arena_chunk_map_t` in double words
-            bitmap_offset = \
-                gdbutil.offsetof('arena_chunk_map_t', 'bits') / jeheap.DWORD_SIZE
-    
-            # number of double words occupied by an `arena_chunk_map_t'
-            chunk_map_dwords = \
-                (bitmap_offset / jeheap.DWORD_SIZE) + 1
-    
-            # prefix to use in gdb's examine command
-            if jeheap.DWORD_SIZE == 8:
-                dword_fmt = 'g'
-            else:
-                dword_fmt = 'w'
-    
-            # the 12 least significant bits of each bitmap entry hold
-            # various flags for the corresponding run
-            flags_mask = (1 << 12) - 1
-    
-            runs = []
-            for chunk in jeheap.chunks:
-                if not chunk.arena:
-                    continue
-    
-                try:
-                    # parse the whole map at once to avoid gdb delays
-                    expr = 'x/%d%sx ((arena_chunk_t *)%#x)->map' % \
-                        (chunk_npages * chunk_map_dwords, dword_fmt, chunk.addr)
-                except:
-                    print '[unmask_jemalloc] error: cannot read bitmap from chunk %#x' (chunk.addr)
-                    sys.exit()
-    
-                lines = (gdb.execute(expr, to_string = true)).split('\n')
-    
-                dwords = []
-                for line in lines:
-                    dwords += [int(dw, 16) for dw in line[line.find(':') + 1:].split()]
-    
-                bitmap = [dwords[i] for i in range(bitmap_offset, len(dwords), bitmap_offset + 1)]
-    
-                # traverse the bitmap
-                for mapelm in bitmap:
-                    flags = mapelm & flags_mask
+            total_runs = len(jeheap.runs)
+            print '[unmask_jemalloc] [total runs %d]' % (total_runs)
 
-                    # `flags == 1' means the chunk is small and the rest of the bits
-                    # hold the actual run address
-                    if flags == 1:
-                        addr = mapelm & ~flags_mask
-                        size = gdbutil.get_page_size()
-
-                    # `flags = 3' indicates a large chunk; calculate the run's address
-                    # directly from the map element index and extract the run's size 
-                    elif flags == 3:
-                        addr = chunk.addr + i * gdbutil.get_page_size()
-                        size = mapelm & ~flags_mask
-
-                    # run is not allocated? skip it
-                    else:
-                        continue
-    
-                    if addr not in [a for (a, s) in runs]:
-                        runs.append((addr, size))
-    
-            for (addr, size) in runs:
-                # XXX: do we need to parse run headers here?
-                print '[unmask_jemalloc] [run %#x] [size %07d]' % (addr, size)
+            for i in range(0, total_runs):
+                print '[unmask_jemalloc] [run %#x] [size %07d]' % \
+                    (jeheap.runs[i].start, jeheap.runs[i].size)
 
 
 class jemalloc_bins(gdb.Command):
