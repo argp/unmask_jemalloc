@@ -35,7 +35,7 @@ def get_dword_size():
         return 4
 
 def get_page_size():
-	return resource.getpagesize()
+    return resource.getpagesize()
 
 def to_int(val):
     sval = str(val)
