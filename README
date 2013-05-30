@@ -1,17 +1,16 @@
 unmask_jemalloc - De Mysteriis Dom jemalloc
-v0.666 (bh-usa-2012)
 
 A gdb/Python extension to unmask and bring to light the internals of the
 various jemalloc flavors.
 
-This special Black Hat USA 2012 release targets Mozilla Firefox and is a
-complete rewrite of the initial version of the utility as published in
-our Phrack paper on exploiting jemalloc:
+This new release of unmask_jemalloc specifically targets Mozilla Firefox
+and is a complete rewrite of the initial version of the utility as
+published in our Phrack paper on exploiting jemalloc:
 
 http://phrack.org/issues.html?issue=68&id=10#article
 
-The original slide deck from our Black USA 2012 presentation is available
-at:
+The original slide deck from our Black USA 2012 presentation on the subject
+of exploiting Firefox/jemalloc is available at:
 
 https://www.blackhat.com/html/bh-us-12/bh-us-12-archives.html#Argyroudis
 
@@ -20,8 +19,8 @@ The updated slide deck is at:
 http://census-labs.com/news/2012/08/03/blackhat-usa-2012-update/
 
 We have extensively tested unmask_jemalloc with various versions of Mozilla
-Firefox (including the latest release at the time of this writing, 13.0.1)
-on Mac OS X (x86_64) and Linux (both x86 and x86_64).
+Firefox (including the latest release at the time of this writing, 21.0) on
+OS X (x86_64) and Linux (both x86 and x86_64).
 
 You can load unmask_jemalloc by including the following in your gdbinit (or
 issuing them at the gdb prompt):
@@ -35,7 +34,7 @@ provided by unmask_jemalloc:
 
 gdb $ jehelp
 [unmask_jemalloc] De Mysteriis Dom jemalloc
-[unmask_jemalloc] v0.666 (bh-usa-2012)
+[unmask_jemalloc] v0.7
 
 [unmask_jemalloc] available commands:
 [unmask_jemalloc]   jechunks               : dump info on all available chunks
@@ -55,5 +54,5 @@ https://github.com/argp/unmask_jemalloc
 
 Feel free to contribute!
 
-argp & huku, Mon Aug 6 13:11:20 EEST 2012
+argp & huku, Thu May 30 10:51:26 EEST 2013
 
