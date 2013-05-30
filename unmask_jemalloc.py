@@ -243,12 +243,12 @@ def jeparse_all_runs(proc):
             else:
                 continue
     
-            if addr not in [a for (a, s) in runs]:
+            if addr not in [r.start for r in jeheap.runs]:
                 # XXX: we need to parse run headers here with a
                 #      dedicated function
                 new_run = jemalloc.arena_run(addr, 0, size, 0, 0, 0, 0, 0, [])
                 jeheap.runs.append(new_run)
-    
+
 
 # parse metadata of current runs and their regions
 def jeparse_runs(proc):
@@ -265,25 +265,29 @@ def jeparse_runs(proc):
 
                 jeheap.arenas[i].bins[j].run.bin = bin_addr
 
+                if jeheap.STANDALONE == false:
+                    jeheap.arenas[i].bins[j].run.size = \
+                        gdbutil.buf_to_le(proc.read_memory(bin_addr + \
+                            (6 * jeheap.DWORD_SIZE), jeheap.DWORD_SIZE))
+
+                    jeheap.arenas[i].bins[j].run.end = \
+                        run_addr + jeheap.arenas[i].bins[j].run.size
+
+                    jeheap.arenas[i].bins[j].run.total_regions = \
+                        gdbutil.buf_to_le(proc.read_memory(bin_addr + \
+                            (7 * jeheap.DWORD_SIZE), gdbutil.INT_SIZE))
+
             except RuntimeError:
                 continue
 
-            if jeheap.STANDALONE == false:
-                jeheap.arenas[i].bins[j].run.size = \
-                    gdbutil.buf_to_le(proc.read_memory(bin_addr + \
-                        (6 * jeheap.DWORD_SIZE), jeheap.DWORD_SIZE))
-
-                jeheap.arenas[i].bins[j].run.end = \
-                    run_addr + jeheap.arenas[i].bins[j].run.size
-
-                jeheap.arenas[i].bins[j].run.total_regions = \
-                    gdbutil.buf_to_le(proc.read_memory(bin_addr + \
-                        (7 * jeheap.DWORD_SIZE), gdbutil.INT_SIZE))
-
             # XXX: this isn't correct on jemalloc standalone *debug* variant
-            jeheap.arenas[i].bins[j].run.free_regions = \
-                gdbutil.buf_to_le(proc.read_memory(run_addr + \
-                    jeheap.DWORD_SIZE + gdbutil.INT_SIZE, gdbutil.INT_SIZE))
+            try:
+                jeheap.arenas[i].bins[j].run.free_regions = \
+                    gdbutil.buf_to_le(proc.read_memory(run_addr + \
+                        jeheap.DWORD_SIZE + gdbutil.INT_SIZE, gdbutil.INT_SIZE))
+            except RuntimeError:
+                jeheap.arenas[i].bins[j].run.free_regions = 0
+                continue
 
             if jeheap.arenas[i].bins[j].run.free_regions < 0:
                 jeheap.arenas[i].bins[j].run.free_regions = 0
@@ -317,9 +321,12 @@ def jeparse_runs(proc):
 
             addr = first_region.addr
 
-            first_region.content_preview = \
-                hex(gdbutil.buf_to_le(proc.read_memory(addr, \
-                    gdbutil.INT_SIZE))).rstrip('L')
+            try:
+                first_region.content_preview = \
+                    hex(gdbutil.buf_to_le(proc.read_memory(addr, \
+                        gdbutil.INT_SIZE))).rstrip('L')
+            except RuntimeError:
+                continue
 
             jeheap.arenas[i].bins[j].run.regions.append(first_region)
 
@@ -333,9 +340,12 @@ def jeparse_runs(proc):
                 addr = current_region.addr = \
                     reg0_addr + (k * jeheap.arenas[i].bins[j].run.region_size)
                 
-                current_region.content_preview = \
-                    hex(gdbutil.buf_to_le(proc.read_memory(addr, \
-                        gdbutil.INT_SIZE))).rstrip('L')
+                try:
+                    current_region.content_preview = \
+                        hex(gdbutil.buf_to_le(proc.read_memory(addr, \
+                            gdbutil.INT_SIZE))).rstrip('L')
+                except:
+                    continue
 
                 jeheap.arenas[i].bins[j].run.regions.append(current_region)
 
@@ -345,7 +355,7 @@ def jeparse_chunks():
     global jeheap
 
     # delete the chunks' list
-    jeheap.chunks = []
+    jeheap.chunks[:] = []
 
     try:
         root = gdbutil.to_int(gdb.parse_and_eval('chunk_rtree.root'))
@@ -376,7 +386,7 @@ def jeparse_chunks():
             line = line[line.find(':') + 1:]
 
             for address in line.split():
-                address = int(address, 16) 
+                address = int(address, 16)
 
                 if address != 0:
                     # leaf nodes hold pointers to actual values
