@@ -81,7 +81,10 @@ def jeparse_general():
         # XXX: these are firefox specific, we must add support for more
         #      jemalloc variants in the future
         if sys.platform == 'darwin':
-            jeheap.nbins = 35
+            jeheap.ntbins = gdbutil.to_int(gdb.parse_and_eval('ntbins'))
+            jeheap.nsbins = gdbutil.to_int(gdb.parse_and_eval('nsbins'))
+            jeheap.nqbins = gdbutil.to_int(gdb.parse_and_eval('nqbins'))
+            jeheap.nbins = jeheap.ntbins + jeheap.nsbins + jeheap.nqbins
         else:
             if jeheap.DWORD_SIZE == 4:
                 jeheap.nbins = 24
@@ -295,6 +298,7 @@ def jeparse_runs(proc):
             # delete the run's regions
             jeheap.arenas[i].bins[j].run.regions[:] = []
             
+            # the run's regions
             reg0_offset = jeheap.arenas[i].bins[j].run.reg0_offset;
             first_region_addr = reg0_addr = run_addr + reg0_offset
 
@@ -420,8 +424,8 @@ def jeparse(proc):
     jeparse_general()
     jeparse_arenas()
     jeparse_runs(proc)
-    jeparse_all_runs(proc)
     jeparse_chunks()
+    jeparse_all_runs(proc)
 
     parsed = true
     print '[unmask_jemalloc] structures parsed'

@@ -27,6 +27,9 @@ class jemalloc:
         self.arenas = arenas
         self.narenas = narenas
         self.nbins = nbins
+        self.ntbins = 0
+        self.nsbins = 0
+        self.nqbins = 0
         self.magrack_size = magrack_size
         self.DWORD_SIZE = gdbutil.get_dword_size()
         self.runs = runs
