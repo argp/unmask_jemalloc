@@ -87,9 +87,9 @@ def jeparse_general():
             jeheap.nbins = jeheap.ntbins + jeheap.nsbins + jeheap.nqbins
         else:
             if jeheap.DWORD_SIZE == 4:
-                jeheap.nbins = 24
+                jeheap.nbins = 36
             elif jeheap.DWORD_SIZE == 8:
-                jeheap.nbins = 23
+                jeheap.nbins = 35
 
     # XXX: figure out how to calculate the chunk size correctly, this is
     #      firefox specific
