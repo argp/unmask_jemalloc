@@ -46,7 +46,7 @@ def to_int(val):
         return int(sval)
 
 def offsetof(struct_name, member_name):
-    expr = '(ptrdiff_t)&(((%s *)0)->%s) - (ptrdiff_t)((%s *)0)' % \
+    expr = '(size_t)&(((%s *)0)->%s) - (size_t)((%s *)0)' % \
         (struct_name, member_name, struct_name)
     return to_int(gdb.parse_and_eval(expr))
 
