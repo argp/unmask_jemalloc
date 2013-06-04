@@ -33,23 +33,21 @@ issuing them at the gdb prompt):
 Then from gdb use the jehelp command to get details on the commands
 provided by unmask_jemalloc:
 
-```bash
-gdb $ jehelp
-[unmask_jemalloc] De Mysteriis Dom jemalloc
-[unmask_jemalloc] v0.7
+    gdb $ jehelp
+    [unmask_jemalloc] De Mysteriis Dom jemalloc
+    [unmask_jemalloc] v0.7
 
-[unmask_jemalloc] available commands:
-[unmask_jemalloc]   jechunks               : dump info on all available chunks
-[unmask_jemalloc]   jearenas               : dump info on jemalloc arenas
-[unmask_jemalloc]   jeruns [-c]            : dump info on jemalloc runs (-c for current runs only)
-[unmask_jemalloc]   jebins                 : dump info on jemalloc bins
-[unmask_jemalloc]   jeregions <size class> : dump all current regions of the given size class
-[unmask_jemalloc]   jesearch [-c] <hex>    : search the heap for the given hex value (-c for current runs only)
-[unmask_jemalloc]   jedump [filename]      : dump all available info to screen (default) or file
-[unmask_jemalloc]   jeparse                : (re)parse jemalloc structures from memory
-[unmask_jemalloc]   jeversion              : output version number
-[unmask_jemalloc]   jehelp                 : this help message
-```
+    [unmask_jemalloc] available commands:
+    [unmask_jemalloc]   jechunks               : dump info on all available chunks
+    [unmask_jemalloc]   jearenas               : dump info on jemalloc arenas
+    [unmask_jemalloc]   jeruns [-c]            : dump info on jemalloc runs (-c for current runs only)
+    [unmask_jemalloc]   jebins                 : dump info on jemalloc bins
+    [unmask_jemalloc]   jeregions <size class> : dump all current regions of the given size class
+    [unmask_jemalloc]   jesearch [-c] <hex>    : search the heap for the given hex value (-c for current runs only)
+    [unmask_jemalloc]   jedump [filename]      : dump all available info to screen (default) or file
+    [unmask_jemalloc]   jeparse                : (re)parse jemalloc structures from memory
+    [unmask_jemalloc]   jeversion              : output version number
+    [unmask_jemalloc]   jehelp                 : this help message
 
 The development of unmask_jemalloc will continue at:
 
