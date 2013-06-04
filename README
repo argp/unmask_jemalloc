@@ -32,6 +32,7 @@ source /path/to/unmask_jemalloc/unmask_jemalloc.py
 Then from gdb use the jehelp command to get details on the commands
 provided by unmask_jemalloc:
 
+```bash
 gdb $ jehelp
 [unmask_jemalloc] De Mysteriis Dom jemalloc
 [unmask_jemalloc] v0.7
@@ -47,6 +48,7 @@ gdb $ jehelp
 [unmask_jemalloc]   jeparse                : (re)parse jemalloc structures from memory
 [unmask_jemalloc]   jeversion              : output version number
 [unmask_jemalloc]   jehelp                 : this help message
+```
 
 The development of unmask_jemalloc will continue at:
 
