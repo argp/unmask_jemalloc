@@ -1,8 +1,8 @@
 # unmask_jemalloc - De Mysteriis Dom jemalloc
 # 
-# Copyright (c) 2013 Patroklos Argyroudis <argp at domain census-labs.com>
-# Copyright (c) 2013 Chariton Karamitas <huku at domain census-labs.com>
-# Copyright (c) 2013 Census, Inc. (http://www.census-labs.com/)
+# Copyright (c) 2014 Patroklos Argyroudis <argp at domain census-labs.com>
+# Copyright (c) 2014 Chariton Karamitas <huku at domain census-labs.com>
+# Copyright (c) 2014 Census, Inc. (http://www.census-labs.com/)
 
 import sys
 import warnings
@@ -55,7 +55,7 @@ def sizeof(type_name):
 
 # unit testing
 if __name__ == '__main__':
-    print '[unmask_jemalloc] unit testing not implemented yet'
+    print('[unmask_jemalloc] unit testing not implemented yet')
     sys.exit(0)
 
 # EOF

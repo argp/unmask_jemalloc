@@ -1,8 +1,8 @@
 # unmask_jemalloc - De Mysteriis Dom jemalloc
 # 
-# Copyright (c) 2013 Patroklos Argyroudis <argp at domain census-labs.com>
-# Copyright (c) 2013 Chariton Karamitas <huku at domain census-labs.com>
-# Copyright (c) 2013 Census, Inc. (http://www.census-labs.com/)
+# Copyright (c) 2014 Patroklos Argyroudis <argp at domain census-labs.com>
+# Copyright (c) 2014 Chariton Karamitas <huku at domain census-labs.com>
+# Copyright (c) 2014 Census, Inc. (http://www.census-labs.com/)
 
 import os
 import sys
@@ -72,7 +72,7 @@ def jeparse_general():
     try:
         jeheap.narenas = gdbutil.to_int(gdb.parse_and_eval('narenas'))
     except RuntimeError:
-        print '[unmask_jemalloc] error: symbol narenas not found'
+        print('[unmask_jemalloc] error: symbol narenas not found')
         sys.exit()
 
     try:
@@ -109,7 +109,7 @@ def jeparse_arenas():
             current_arena.addr = \
                 gdbutil.to_int(gdb.parse_and_eval('arenas[%d]' % (i)))
         except:
-            print '[unmask_jemalloc] error: cannot evaluate arenas[%d]' % (i)
+            print('[unmask_jemalloc] error: cannot evaluate arenas[%d]') % (i)
             sys.exit()
 
         for j in range(0, jeheap.nbins):
@@ -215,16 +215,19 @@ def jeparse_all_runs(proc):
             expr = 'x/%d%sx ((arena_chunk_t *)%#x)->map' % \
                 (chunk_npages * chunk_map_dwords, dword_fmt, chunk.addr)
         except:
-            print '[unmask_jemalloc] error: cannot read bitmap from chunk %#x' (chunk.addr)
+            print('[unmask_jemalloc] error: cannot read bitmap from chunk %#x' % (chunk.addr))
             sys.exit()
 
         lines = (gdb.execute(expr, to_string = true)).split('\n')
 
         dwords = []
+        i = 0
+
         for line in lines:
             dwords += [int(dw, 16) for dw in line[line.find(':') + 1:].split()]
 
-        bitmap = [dwords[i] for i in range(bitmap_offset, len(dwords), bitmap_offset + 1)]
+        bitmap = [dwords[i] for i in range(int(bitmap_offset), \
+                int(len(dwords)), int(bitmap_offset + 1))]
 
         # traverse the bitmap
         for mapelm in bitmap:
@@ -370,7 +373,7 @@ def jeparse_chunks():
             expr = 'chunk_rtree.level2bits[%d]' % (i)
             level2bits.append(gdbutil.to_int(gdb.parse_and_eval(expr)))
     except:
-        print '[unmask_jemalloc] error: cannot parse chunk radix tree'
+        print('[unmask_jemalloc] error: cannot parse chunk radix tree')
         sys.exit()
 
     # check if we're running on x86_64
@@ -418,7 +421,7 @@ def jeparse(proc):
     global parsed
 
     parsed = false
-    print '[unmask_jemalloc] parsing structures from memory...'
+    print('[unmask_jemalloc] parsing structures from memory...')
 
     jeparse_options()
     jeparse_general()
@@ -428,7 +431,7 @@ def jeparse(proc):
     jeparse_all_runs(proc)
 
     parsed = true
-    print '[unmask_jemalloc] structures parsed'
+    print('[unmask_jemalloc] structures parsed')
 
 
 ########## exported gdb commands ##########
@@ -440,19 +443,19 @@ class jemalloc_help(gdb.Command):
         gdb.Command.__init__(self, 'jehelp', gdb.COMMAND_OBSCURE)
 
     def invoke(self, arg, from_tty):
-        print '[unmask_jemalloc] De Mysteriis Dom jemalloc'
-        print '[unmask_jemalloc] %s\n' % (jemalloc.VERSION)
-        print '[unmask_jemalloc] available commands:'
-        print '[unmask_jemalloc]   jechunks               : dump info on all available chunks'
-        print '[unmask_jemalloc]   jearenas               : dump info on jemalloc arenas'
-        print '[unmask_jemalloc]   jeruns [-c]            : dump info on jemalloc runs (-c for current runs only)'
-        print '[unmask_jemalloc]   jebins                 : dump info on jemalloc bins'
-        print '[unmask_jemalloc]   jeregions <size class> : dump all current regions of the given size class'
-        print '[unmask_jemalloc]   jesearch [-c] <hex>    : search the heap for the given hex value (-c for current runs only)'
-        print '[unmask_jemalloc]   jedump [filename]      : dump all available info to screen (default) or file'
-        print '[unmask_jemalloc]   jeparse                : (re)parse jemalloc structures from memory'
-        print '[unmask_jemalloc]   jeversion              : output version number'
-        print '[unmask_jemalloc]   jehelp                 : this help message'
+        print('[unmask_jemalloc] De Mysteriis Dom jemalloc')
+        print('[unmask_jemalloc] %s\n' % (jemalloc.VERSION))
+        print('[unmask_jemalloc] available commands:')
+        print('[unmask_jemalloc]   jechunks               : dump info on all available chunks')
+        print('[unmask_jemalloc]   jearenas               : dump info on jemalloc arenas')
+        print('[unmask_jemalloc]   jeruns [-c]            : dump info on jemalloc runs (-c for current runs only)')
+        print('[unmask_jemalloc]   jebins                 : dump info on jemalloc bins')
+        print('[unmask_jemalloc]   jeregions <size class> : dump all current regions of the given size class')
+        print('[unmask_jemalloc]   jesearch [-c] <hex>    : search the heap for the given hex value (-c for current runs only)')
+        print('[unmask_jemalloc]   jedump [filename]      : dump all available info to screen (default) or file')
+        print('[unmask_jemalloc]   jeparse                : (re)parse jemalloc structures from memory')
+        print('[unmask_jemalloc]   jeversion              : output version number')
+        print('[unmask_jemalloc]   jehelp                 : this help message')
 
 
 class jemalloc_version(gdb.Command):
@@ -462,7 +465,7 @@ class jemalloc_version(gdb.Command):
         gdb.Command.__init__(self, 'jeversion', gdb.COMMAND_OBSCURE)
 
     def invoke(self, arg, from_tty):
-        print '[unmask_jemalloc] %s' % (jemalloc.VERSION)
+        print('[unmask_jemalloc] %s' % (jemalloc.VERSION))
 
 
 class jemalloc_parse(gdb.Command):
@@ -489,49 +492,49 @@ class jemalloc_dump(gdb.Command):
         global jeheap
 
         if arg == '':
-            print '[unmask_jemalloc] dumping all jemalloc info to screen'
+            print('[unmask_jemalloc] dumping all jemalloc info to screen')
         else:
-            print '[unmask_jemalloc] dumping all jemalloc info to file %s' % (arg)
+            print('[unmask_jemalloc] dumping all jemalloc info to file %s' % (arg))
 
             if os.path.exists(arg):
-                print '[unmask_jemalloc] error: file %s already exists' % (arg)
+                print('[unmask_jemalloc] error: file %s already exists' % (arg))
                 return
 
             try:
                 sys.stdout = open(arg, 'w')
             except:
-                print '[unmask_jemalloc] error opening file %s for writing' % (arg)
+                print('[unmask_jemalloc] error opening file %s for writing' % (arg))
             
         if parsed == false:
             jeparse(self.proc)
 
         # general jemalloc info
-        print jeheap
-        print ''
+        print(jeheap)
+        print('')
 
         # info on chunks
         for chunk in jeheap.chunks:
-            print chunk
+            print(chunk)
             
-        print ''
+        print('')
 
         # info on arenas
         for i in range(0, len(jeheap.arenas)):
-            print jeheap.arenas[i]
+            print(jeheap.arenas[i])
             
-            print ''
+            print('')
 
             # info on current runs and bins
             for j in range(0, len(jeheap.arenas[i].bins)):
-                print jeheap.arenas[i].bins[j].run
-                print jeheap.arenas[i].bins[j]
+                print(jeheap.arenas[i].bins[j].run)
+                print(jeheap.arenas[i].bins[j])
 
                 # info on current regions
                 for k in range(0, len(jeheap.arenas[i].bins[j].run.regions)):
-                    print '[unmask_jemalloc] [region %03d] [%#x]' % \
-                        (k, jeheap.arenas[i].bins[j].run.regions[k].addr)
+                    print('[unmask_jemalloc] [region %03d] [%#x]' % \
+                        (k, jeheap.arenas[i].bins[j].run.regions[k].addr))
 
-                print ''
+                print('')
 
         # reset stdout
         if arg != '':
@@ -553,7 +556,7 @@ class jemalloc_chunks(gdb.Command):
             jeparse(self.proc)
 
         for chunk in jeheap.chunks:
-            print chunk
+            print(chunk)
 
 
 class jemalloc_arenas(gdb.Command):
@@ -570,7 +573,7 @@ class jemalloc_arenas(gdb.Command):
         if parsed == false:
             jeparse(self.proc)
 
-        print jeheap
+        print(jeheap)
 
 
 class jemalloc_runs(gdb.Command):
@@ -594,23 +597,23 @@ class jemalloc_runs(gdb.Command):
             current_runs = false
 
         if current_runs == true:
-            print '[unmask_jemalloc] listing current runs only'
+            print('[unmask_jemalloc] listing current runs only')
 
             for i in range(0, len(jeheap.arenas)):
-                print jeheap.arenas[i]
+                print(jeheap.arenas[i])
     
                 for j in range(0, len(jeheap.arenas[i].bins)):
-                    print jeheap.arenas[i].bins[j].run
+                    print(jeheap.arenas[i].bins[j].run)
 
         else:
-            print '[unmask_jemalloc] listing all allocated runs'
+            print('[unmask_jemalloc] listing all allocated runs')
 
             total_runs = len(jeheap.runs)
-            print '[unmask_jemalloc] [total runs %d]' % (total_runs)
+            print('[unmask_jemalloc] [total runs %d]' % (total_runs))
 
             for i in range(0, total_runs):
-                print '[unmask_jemalloc] [run %#x] [size %07d]' % \
-                    (jeheap.runs[i].start, jeheap.runs[i].size)
+                print('[unmask_jemalloc] [run %#x] [size %07d]' % \
+                    (jeheap.runs[i].start, jeheap.runs[i].size))
 
 
 class jemalloc_bins(gdb.Command):
@@ -628,10 +631,10 @@ class jemalloc_bins(gdb.Command):
             jeparse(self.proc)
 
         for i in range(0, len(jeheap.arenas)):
-            print jeheap.arenas[i]
+            print(jeheap.arenas[i])
 
             for j in range(0, len(jeheap.arenas[i].bins)):
-                print jeheap.arenas[i].bins[j]
+                print(jeheap.arenas[i].bins[j])
 
 
 class jemalloc_regions(gdb.Command):
@@ -646,8 +649,8 @@ class jemalloc_regions(gdb.Command):
         global jeheap
 
         if arg == '':
-            print '[unmask_jemalloc] usage: jeregions <size class>'
-            print '[unmask_jemalloc] for example: jeregions 1024'
+            print('[unmask_jemalloc] usage: jeregions <size class>')
+            print('[unmask_jemalloc] for example: jeregions 1024')
             return
 
         if parsed == false:
@@ -655,7 +658,7 @@ class jemalloc_regions(gdb.Command):
 
         size_class = int(arg)
 
-        print '[unmask_jemalloc] dumping all regions of size class %d' % (size_class)
+        print('[unmask_jemalloc] dumping all regions of size class %d' % (size_class))
         found = false
 
         for i in range(0, len(jeheap.arenas)):
@@ -663,16 +666,16 @@ class jemalloc_regions(gdb.Command):
                 
                 if jeheap.arenas[i].bins[j].run.region_size == size_class:
                     found = true
-                    print jeheap.arenas[i].bins[j].run
+                    print(jeheap.arenas[i].bins[j].run)
                     
                     # the bitmask of small-sized runs is too big to display
                     # print '[unmask_jemalloc] [regs_mask %s]' % (jeheap.arenas[i].bins[j].run.regs_mask)
 
                     for k in range(0, len(jeheap.arenas[i].bins[j].run.regions)):
-                        print jeheap.arenas[i].bins[j].run.regions[k]
+                        print(jeheap.arenas[i].bins[j].run.regions[k])
 
         if found == false:
-            print '[unmask_jemalloc] no regions found for size class %d' % (size_class)
+            print('[unmask_jemalloc] no regions found for size class %d' % (size_class))
 
 
 class jemalloc_search(gdb.Command):
@@ -687,9 +690,9 @@ class jemalloc_search(gdb.Command):
         global jeheap
 
         if arg == '':
-            print '[unmask_jemalloc] usage: jesearch [-c] <hex value>'
-            print '[unmask_jemalloc] Use -c to search current runs only'
-            print '[unmask_jemalloc] for example: jesearch 0x41424344'
+            print('[unmask_jemalloc] usage: jesearch [-c] <hex value>')
+            print('[unmask_jemalloc] Use -c to search current runs only')
+            print('[unmask_jemalloc] for example: jesearch 0x41424344')
             return
 
         arg = arg.split()
@@ -707,7 +710,7 @@ class jemalloc_search(gdb.Command):
         found = false
 
         if current_runs == true:
-            print '[unmask_jemalloc] searching all current runs for %s' % (search_for)
+            print('[unmask_jemalloc] searching all current runs for %s' % (search_for))
     
             for i in range(0, len(jeheap.arenas)):
                 for j in range(0, len(jeheap.arenas[i].bins)):
@@ -727,7 +730,7 @@ class jemalloc_search(gdb.Command):
                             found = true
                             results.append((str_result, jeheap.arenas[i].bins[j].run.start))
         else:
-            print '[unmask_jemalloc] searching all chunks for %s' % (search_for)
+            print('[unmask_jemalloc] searching all chunks for %s' % (search_for))
 
             for chunk in jeheap.chunks:
                 try:
@@ -745,16 +748,16 @@ class jemalloc_search(gdb.Command):
                         results.append((str_result, chunk.addr))
 
         if found == false:
-            print '[unmask_jemalloc] value %s not found' % (search_for)
+            print('[unmask_jemalloc] value %s not found' % (search_for))
             return
 
         for (what, where) in results:
             if current_runs == true:
-                print '[unmask_jemalloc] found %s at %s (run %#x)' % \
-                    (search_for, what, where)
+                print('[unmask_jemalloc] found %s at %s (run %#x)' % \
+                    (search_for, what, where))
             else:
-                print '[unmask_jemalloc] found %s at %s (chunk %#x)' % \
-                    (search_for, what, where)
+                print('[unmask_jemalloc] found %s at %s (chunk %#x)' % \
+                    (search_for, what, where))
 
 
 # required for classes that implement gdb commands
