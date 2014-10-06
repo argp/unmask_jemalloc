@@ -20,8 +20,8 @@ The updated slide deck is at:
 http://census-labs.com/news/2012/08/03/blackhat-usa-2012-update/
 
 We have extensively tested unmask_jemalloc with various versions of Mozilla
-Firefox (including the latest release at the time of this writing, 21.0) on
-OS X (x86_64) and Linux (both x86 and x86_64).
+Firefox (including the latest release at the time of this writing, 32.0.3) on
+OS X (x86_64) and Linux (both x86 and x86_64) with gdb 7.7 (which embeds Python3).
 
 You can load unmask_jemalloc by including the following in your gdbinit (or
 issuing them at the gdb prompt):
@@ -35,7 +35,7 @@ provided by unmask_jemalloc:
 
     gdb $ jehelp
     [unmask_jemalloc] De Mysteriis Dom jemalloc
-    [unmask_jemalloc] v0.7
+    [unmask_jemalloc] v0.8
 
     [unmask_jemalloc] available commands:
     [unmask_jemalloc]   jechunks               : dump info on all available chunks
@@ -55,5 +55,6 @@ https://github.com/argp/unmask_jemalloc
 
 Feel free to contribute!
 
-argp & huku, Fri Oct  3 13:55:04 EEST 2014
+argp & huku, Mon Oct  6 15:06:32 EEST 2014
+
 

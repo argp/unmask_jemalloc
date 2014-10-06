@@ -13,7 +13,7 @@ import gdbutil
 true = True
 false = False
 
-VERSION = 'v0.7'
+VERSION = 'v0.8'
 
 class jemalloc:
 
