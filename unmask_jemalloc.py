@@ -15,7 +15,7 @@ import util
 true = True
 false = False
 
-# globals (these should be in unmask_jemalloc.py)
+# globals
 jeheap = jemalloc.jemalloc()
 parsed = false
 
