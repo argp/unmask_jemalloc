@@ -20,7 +20,7 @@ The updated slide deck is at:
 http://census-labs.com/news/2012/08/03/blackhat-usa-2012-update/
 
 We have extensively tested unmask_jemalloc with various versions of Mozilla
-Firefox (including the latest release at the time of this writing, 32.0.3) on
+Firefox (including the latest release at the time of this writing, 33.0) on
 OS X (x86_64) and Linux (both x86 and x86_64) with gdb 7.7 (which embeds Python3).
 
 You can load unmask_jemalloc by including the following in your gdbinit (or

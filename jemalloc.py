@@ -61,7 +61,6 @@ class arena_chunk:
         else:
             return '[unmask_jemalloc] [chunk %#x] [orphan]' % (self.addr)
 
-
 class arena_run:
 
     def __init__(self, start = 0, end = 0, size = 0, bin = 0, \
