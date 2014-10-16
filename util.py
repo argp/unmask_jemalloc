@@ -2,17 +2,12 @@
 # 
 # Copyright (c) 2014 Patroklos Argyroudis <argp at domain census-labs.com>
 # Copyright (c) 2014 Chariton Karamitas <huku at domain census-labs.com>
-# Copyright (c) 2014 Census, Inc. (http://www.census-labs.com/)
 
 import sys
 import warnings
 import platform
-import resource
 
 sys.path.append('.')
-
-from gdbwrap import *
-
 
 INT_SIZE = 4        # on all tested platforms
 
@@ -34,9 +29,6 @@ def get_dword_size():
     else:
         return 4
 
-def get_page_size():
-    return resource.getpagesize()
-
 def to_int(val):
     sval = str(val)
 
@@ -44,14 +36,6 @@ def to_int(val):
         return int(sval, 16)
     else:
         return int(sval)
-
-def offsetof(struct_name, member_name):
-    expr = '(size_t)&(((%s *)0)->%s) - (size_t)((%s *)0)' % \
-        (struct_name, member_name, struct_name)
-    return to_int(gdb.parse_and_eval(expr))
-
-def sizeof(type_name):
-    return to_int(gdb.parse_and_eval('sizeof(%s)' % (type_name)))
 
 # unit testing
 if __name__ == '__main__':

@@ -2,18 +2,17 @@
 # 
 # Copyright (c) 2014 Patroklos Argyroudis <argp at domain census-labs.com>
 # Copyright (c) 2014 Chariton Karamitas <huku at domain census-labs.com>
-# Copyright (c) 2014 Census, Inc. (http://www.census-labs.com/)
 
 import sys
 import warnings
 
 sys.path.append('.')
-import gdbutil
+import util
+
+VERSION = 'v0.8'
 
 true = True
 false = False
-
-VERSION = 'v0.8'
 
 class jemalloc:
 
@@ -31,7 +30,7 @@ class jemalloc:
         self.nsbins = 0
         self.nqbins = 0
         self.magrack_size = magrack_size
-        self.DWORD_SIZE = gdbutil.get_dword_size()
+        self.DWORD_SIZE = util.get_dword_size()
         self.runs = runs
 
         self.MAGAZINES = magaz_flag

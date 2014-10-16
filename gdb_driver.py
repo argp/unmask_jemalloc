@@ -2,7 +2,6 @@
 # 
 # Copyright (c) 2014 Patroklos Argyroudis <argp at domain census-labs.com>
 # Copyright (c) 2014 Chariton Karamitas <huku at domain census-labs.com>
-# Copyright (c) 2014 Census, Inc. (http://www.census-labs.com/)
 
 import os
 import sys
@@ -10,11 +9,8 @@ import warnings
 
 sys.path.append('.')
 
-# import everything from gdbwrap in the current namespace so that the
-# global `gdb' object is easily accessible
-from gdbwrap import *
 import jemalloc
-import gdbutil
+import util
 
 true = True
 false = False
@@ -22,7 +18,6 @@ false = False
 # globals
 jeheap = jemalloc.jemalloc()
 parsed = false
-
 
 ########## internal parsing stuff ##########
 
