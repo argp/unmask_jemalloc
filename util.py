@@ -29,8 +29,6 @@ def get_dword_size():
 def to_int(val):
     sval = str(val)
 
-    # XXX: this must handle windbg's "?? sizeof" return string
-
     if sval.startswith('0x'):
         return int(sval, 16)
     else:
