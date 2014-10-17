@@ -1,7 +1,4 @@
 # unmask_jemalloc - De Mysteriis Dom jemalloc
-# 
-# Copyright (c) 2014 Patroklos Argyroudis <argp at domain census-labs.com>
-# Copyright (c) 2014 Chariton Karamitas <huku at domain census-labs.com>
 
 import sys
 import warnings
@@ -31,6 +28,8 @@ def get_dword_size():
 
 def to_int(val):
     sval = str(val)
+
+    # XXX: this must handle windbg's "?? sizeof" return string
 
     if sval.startswith('0x'):
         return int(sval, 16)

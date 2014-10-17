@@ -1,7 +1,4 @@
 # unmask_jemalloc - De Mysteriis Dom jemalloc
-# 
-# Copyright (c) 2014 Patroklos Argyroudis <argp at domain census-labs.com>
-# Copyright (c) 2014 Chariton Karamitas <huku at domain census-labs.com>
 
 import sys
 import warnings

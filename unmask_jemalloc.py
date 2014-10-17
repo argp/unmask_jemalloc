@@ -1,7 +1,4 @@
 # unmask_jemalloc - De Mysteriis Dom jemalloc
-# 
-# Copyright (c) 2014 Patroklos Argyroudis <argp at domain census-labs.com>
-# Copyright (c) 2014 Chariton Karamitas <huku at domain census-labs.com>
 
 import os
 import sys
@@ -18,8 +15,16 @@ false = False
 # globals
 jeheap = jemalloc.jemalloc()
 parsed = false
+dbg_engine = ''
 
-########## internal parsing stuff ##########
+try:
+    import gdb
+    import gdb_engine as dbg
+    dbg_engine = 'gdb' # XXX: try _not_ to use this
+except ImportError:
+    # XXX: try to import other debugger python engine(s) here
+    print('[unmask_jemalloc] error: only usable from within gdb at the moment')
+    sys.exit()
 
 # parse jemalloc configuration options
 def jeparse_options():
@@ -27,18 +32,18 @@ def jeparse_options():
 
     # thread magazine caches (disabled on firefox)
     try:
-        opt_mag = gdb.parse_and_eval('opt_mag')
+        opt_mag = dbg.get_value('opt_mag')
     except RuntimeError:
         opt_mag = 0
 
     try:
-        opt_tcache = gdb.parse_and_eval('opt_tcache')
+        opt_tcache = dbg.get_value('opt_tcache')
     except RuntimeError:
         opt_tcache = 0
 
     try:
         opt_lg_tcache_nslots = \
-            gdb.parse_and_eval('opt_lg_tcache_nslots')
+            dbg.get_value('opt_lg_tcache_nslots')
     except RuntimeError:
         opt_lg_tcache_nslots = 0
 
@@ -47,38 +52,41 @@ def jeparse_options():
 
     if jeheap.MAGAZINES == true:
         try:
-            expr = 'sizeof(mag_rack_t) + (sizeof(bin_mags_t) * (jeheap.nbins - 1))'
+            mag_rag_t_size = dbg.sizeof('mag_rack_t')
+            bin_mags_t_size = dbg.sizeof('bin_mags_t')
+                
             jeheap.magrack_size = \
-                gdbutil.to_int(gdb.parse_and_eval(expr))
+                    mag_rag_t_size + (bin_mags_t_size * (jeheap.nbins - 1))
 
         except RuntimeError:
             # standalone variant
             jeheap.STANDALONE = true
 
-            expr = 'sizeof(tcache_t) + (sizeof(tcache_bin_t) * (jeheap.nbins - 1))'
-            jemalloc.magrack_size = \
-                gdbutil.to_int(gdb.parse_and_eval())
+            tcache_t_size = dbg.sizeof('tcache_t')
+            tcache_bin_t_size = dbg.sizeof('tcache_bin_t')
 
+            jemalloc.magrack_size = \
+                    tcache_t_size + (tcache_bin_t_size * (jeheap.nbins - 1))
 
 # parse general jemalloc information
 def jeparse_general():
     global jeheap
 
     try:
-        jeheap.narenas = gdbutil.to_int(gdb.parse_and_eval('narenas'))
+        jeheap.narenas = util.to_int(dbg.get_value('narenas'))
     except RuntimeError:
         print('[unmask_jemalloc] error: symbol narenas not found')
         sys.exit()
 
     try:
-        jeheap.nbins = gdbutil.to_int(gdb.parse_and_eval('nbins'))
+        jeheap.nbins = util.to_int(dbg.get_value('nbins'))
     except RuntimeError:
         # XXX: these are firefox specific, we must add support for more
         #      jemalloc variants in the future
-        if sys.platform == 'darwin':
-            jeheap.ntbins = gdbutil.to_int(gdb.parse_and_eval('ntbins'))
-            jeheap.nsbins = gdbutil.to_int(gdb.parse_and_eval('nsbins'))
-            jeheap.nqbins = gdbutil.to_int(gdb.parse_and_eval('nqbins'))
+        if sys.platform == 'darwin' or sys.platform == 'win32':
+            jeheap.ntbins = util.to_int(dbg.get_value('ntbins'))
+            jeheap.nsbins = util.to_int(dbg.get_value('nsbins'))
+            jeheap.nqbins = util.to_int(dbg.get_value('nqbins'))
             jeheap.nbins = jeheap.ntbins + jeheap.nsbins + jeheap.nqbins
         else:
             if jeheap.DWORD_SIZE == 4:
@@ -89,7 +97,6 @@ def jeparse_general():
     # XXX: figure out how to calculate the chunk size correctly, this is
     #      firefox specific
     jeheap.chunk_size = 1 << 20
-
 
 # parse jemalloc arena information
 def jeparse_arenas():
@@ -102,26 +109,26 @@ def jeparse_arenas():
 
         try:
             current_arena.addr = \
-                gdbutil.to_int(gdb.parse_and_eval('arenas[%d]' % (i)))
+                util.to_int(dbg.eval_expr('arenas[%d]' % (i)))
         except:
             print('[unmask_jemalloc] error: cannot evaluate arenas[%d]') % (i)
             sys.exit()
 
         for j in range(0, jeheap.nbins):
-            nrg        = 0
-            run_sz     = 0
-            reg_size   = 0
+            nrg = 0
+            run_sz = 0
+            reg_size = 0
             reg_offset = 0
-            end_addr   = 0
+            end_addr = 0
 
             try:
                 expr = 'arenas[%d].bins[%d].reg_size' % (i, j)
                 reg_size = \
-                    gdbutil.to_int(gdb.parse_and_eval(expr))
+                    util.to_int(dbg.eval_expr(expr))
                
                 expr = 'arenas[%d].bins[%d].reg0_offset' % (i, j) 
                 reg_offset = \
-                    gdbutil.to_int(gdb.parse_and_eval(expr))
+                    util.to_int(dbg.eval_expr(expr))
 
             except RuntimeError:
                 # XXX: for now assume it's a standalone variant; we
@@ -130,20 +137,21 @@ def jeparse_arenas():
 
                 expr = 'arena_bin_info[%d].reg_size' % (j)
                 reg_size = \
-                    gdbutil.to_int(gdb.parse_and_eval(expr))
+                    util.to_int(dbg.eval_expr(expr))
 
                 expr = 'arena_bin_info[%d].nregs' % (j)
                 nrg = \
-                    gdbutil.to_int(gdb.parse_and_eval(expr))
+                    util.to_int(dbg.eval_expr(expr))
 
                 expr = 'arena_bin_info[%d].run_size' % (j)
                 run_sz = \
-                    gdbutil.to_int(gdb.parse_and_eval(expr))
+                    util.to_int(dbg.eval_expr(expr))
 
             try:
                 expr = 'arenas[%d].bins[%d].runcur' % (i, j)
                 runcur_addr = runcur = \
-                    gdbutil.to_int(gdb.parse_and_eval(expr))
+                    util.to_int(dbg.eval_expr(expr))
+
                 end_addr = runcur_addr + run_sz
 
                 if runcur != 0:
@@ -153,7 +161,7 @@ def jeparse_arenas():
 
                     current_bin = jemalloc.arena_bin(0, j, current_run)
                     current_bin.addr = \
-                        gdbutil.to_int(gdb.parse_and_eval('&arenas[%d].bins[%d]' % (i, j)))
+                        util.to_int(dbg.eval_expr('&arenas[%d].bins[%d]' % (i, j)))
 
                     current_arena.bins.append(current_bin)
 
@@ -172,7 +180,6 @@ def jeparse_arenas():
         # add arena to the list of arenas
         jeheap.arenas.append(current_arena)
 
-
 # parse the metadata of all runs and their regions
 def jeparse_all_runs(proc):
     global jeheap
@@ -182,7 +189,7 @@ def jeparse_all_runs(proc):
 
     # offset of bits in arena_chunk_map_t in double words
     bitmap_offset = \
-        gdbutil.offsetof('arena_chunk_map_t', 'bits') / jeheap.DWORD_SIZE
+        util.offsetof('arena_chunk_map_t', 'bits') / jeheap.DWORD_SIZE
 
     # number of double words occupied by an arena_chunk_map_t
     chunk_map_dwords = \
@@ -206,14 +213,14 @@ def jeparse_all_runs(proc):
             continue
 
         try:
-            # parse the whole map at once to avoid gdb delays
+            # parse the whole map at once to avoid gdb's delays
             expr = 'x/%d%sx ((arena_chunk_t *)%#x)->map' % \
                 (chunk_npages * chunk_map_dwords, dword_fmt, chunk.addr)
         except:
             print('[unmask_jemalloc] error: cannot read bitmap from chunk %#x' % (chunk.addr))
             sys.exit()
 
-        lines = (gdb.execute(expr, to_string = true)).split('\n')
+        lines = (dbg.execute(expr)).split('\n')
 
         dwords = []
         i = 0
@@ -232,12 +239,12 @@ def jeparse_all_runs(proc):
             # hold the actual run address
             if flags == 1:
                 addr = mapelm & ~flags_mask
-                size = gdbutil.get_page_size()
+                size = dbg.get_page_size()
 
             # flags = 3 indicates a large chunk; calculate the run's address
             # directly from the map element index and extract the run's size 
             elif flags == 3:
-                addr = chunk.addr + i * gdbutil.get_page_size()
+                addr = chunk.addr + i * dbg.get_page_size()
                 size = mapelm & ~flags_mask
 
             # run is not allocated? skip it
@@ -262,21 +269,21 @@ def jeparse_runs(proc):
                 run_addr = jeheap.arenas[i].bins[j].run.start
                     
                 bin_addr = \
-                    gdbutil.buf_to_le(proc.read_memory(run_addr, jeheap.DWORD_SIZE))
+                    util.buf_to_le(dbg.read_memory(run_addr, jeheap.DWORD_SIZE))
 
                 jeheap.arenas[i].bins[j].run.bin = bin_addr
 
                 if jeheap.STANDALONE == false:
                     jeheap.arenas[i].bins[j].run.size = \
-                        gdbutil.buf_to_le(proc.read_memory(bin_addr + \
+                        util.buf_to_le(dbg.read_memory(bin_addr + \
                             (6 * jeheap.DWORD_SIZE), jeheap.DWORD_SIZE))
 
                     jeheap.arenas[i].bins[j].run.end = \
                         run_addr + jeheap.arenas[i].bins[j].run.size
 
                     jeheap.arenas[i].bins[j].run.total_regions = \
-                        gdbutil.buf_to_le(proc.read_memory(bin_addr + \
-                            (7 * jeheap.DWORD_SIZE), gdbutil.INT_SIZE))
+                        util.buf_to_le(dbg.read_memory(bin_addr + \
+                            (7 * jeheap.DWORD_SIZE), util.INT_SIZE))
 
             except RuntimeError:
                 continue
@@ -284,8 +291,8 @@ def jeparse_runs(proc):
             # XXX: this isn't correct on jemalloc standalone *debug* variant
             try:
                 jeheap.arenas[i].bins[j].run.free_regions = \
-                    gdbutil.buf_to_le(proc.read_memory(run_addr + \
-                        jeheap.DWORD_SIZE + gdbutil.INT_SIZE, gdbutil.INT_SIZE))
+                    util.buf_to_le(dbg.read_memory(run_addr + \
+                        jeheap.DWORD_SIZE + util.INT_SIZE, util.INT_SIZE))
             except RuntimeError:
                 jeheap.arenas[i].bins[j].run.free_regions = 0
                 continue
@@ -304,8 +311,8 @@ def jeparse_runs(proc):
                 (jeheap.arenas[i].bins[j].run.total_regions / 8) + 1
 
             regs_mask_str = \
-                gdb.execute('x/%dbt arenas[%d].bins[%d].runcur.regs_mask' % \
-                    (regs_mask_bits, i, j), to_string = true)
+                dbg.execute('x/%dbt arenas[%d].bins[%d].runcur.regs_mask' % \
+                    (regs_mask_bits, i, j))
 
             regs_mask = ''
 
@@ -325,8 +332,8 @@ def jeparse_runs(proc):
 
             try:
                 first_region.content_preview = \
-                    hex(gdbutil.buf_to_le(proc.read_memory(addr, \
-                        gdbutil.INT_SIZE))).rstrip('L')
+                    hex(util.buf_to_le(dbg.read_memory(addr, \
+                        util.INT_SIZE))).rstrip('L')
             except RuntimeError:
                 continue
 
@@ -344,13 +351,12 @@ def jeparse_runs(proc):
                 
                 try:
                     current_region.content_preview = \
-                        hex(gdbutil.buf_to_le(proc.read_memory(addr, \
-                            gdbutil.INT_SIZE))).rstrip('L')
+                        hex(util.buf_to_le(dbg.read_memory(addr, \
+                            util.INT_SIZE))).rstrip('L')
                 except:
                     continue
 
                 jeheap.arenas[i].bins[j].run.regions.append(current_region)
-
 
 # parse all jemalloc chunks
 def jeparse_chunks():
@@ -473,7 +479,6 @@ class jemalloc_parse(gdb.Command):
 
     def invoke(self, arg, from_tty):
         jeparse(self.proc)
-
 
 class jemalloc_dump(gdb.Command):
     '''Dump all available jemalloc info to screen (default) or to file'''
