@@ -62,7 +62,7 @@ def jeparse_options():
 
             expr = 'sizeof(tcache_t) + (sizeof(tcache_bin_t) * (jeheap.nbins - 1))'
             jemalloc.magrack_size = \
-                gdbutil.to_int(gdb.parse_and_eval())
+                gdbutil.to_int(gdb.parse_and_eval(expr))
 
 
 # parse general jemalloc information
