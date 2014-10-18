@@ -759,17 +759,4 @@ class jemalloc_search(gdb.Command):
                 print('[unmask_jemalloc] found %s at %s (chunk %#x)' % \
                     (search_for, what, where))
 
-
-# required for classes that implement gdb commands
-jemalloc_parse()
-jemalloc_dump()
-jemalloc_chunks()
-jemalloc_arenas()
-jemalloc_runs()
-jemalloc_bins()
-jemalloc_regions()
-jemalloc_search()
-jemalloc_help()
-jemalloc_version()
-
 # EOF

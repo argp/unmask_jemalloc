@@ -3,6 +3,10 @@
 import sys
 import resource
 
+sys.path.append('.')
+
+import gdb_driver
+
 try:
     import gdb
 except ImportError:
