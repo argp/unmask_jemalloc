@@ -34,52 +34,54 @@ class jemalloc_parse(gdb.Command):
     '''Parse jemalloc structures from memory'''
 
     def __init__(self):
-        global proc
         gdb.Command.__init__(self, 'jeparse', gdb.COMMAND_OBSCURE)
 
-        proc = gdb.inferiors()[0]
+        self.proc = gdb.inferiors()[0]
 
     def invoke(self, arg, from_tty):
-        unmask_jemalloc.parse()
+        unmask_jemalloc.parse(proc = self.proc)
 
 class jemalloc_dump(gdb.Command):
     '''Dump all available jemalloc info to screen (default) or to file'''
 
     def __init__(self):
-        global proc
         gdb.Command.__init__(self, 'jedump', gdb.COMMAND_OBSCURE)
 
-        proc = gdb.inferiors()[0]
+        self.proc = gdb.inferiors()[0]
 
     def invoke(self, arg, from_tty):
-        unmask_jemalloc.dump()
+        if arg == '':
+            screen = true
+        else:
+            screen = false
+
+        unmask_jemalloc.dump_all(filename = arg, \
+                dump_to_screen = screen, proc = self.proc)
 
 class jemalloc_chunks(gdb.Command):
     '''Dump info on all available chunks'''
 
     def __init__(self):
-        global proc
         gdb.Command.__init__(self, 'jechunks', gdb.COMMAND_OBSCURE)
        
-        proc = gdb.inferiors()[0]
+        self.proc = gdb.inferiors()[0]
 
     def invoke(self, arg, from_tty):
-        unmask_jemalloc.chunks()
+        unmask_jemalloc.dump_chunks(proc = self.proc)
 
 class jemalloc_arenas(gdb.Command):
     '''Dump info on jemalloc arenas'''
 
     def __init__(self):
-        global proc
         gdb.Command.__init__(self, 'jearenas', gdb.COMMAND_OBSCURE)
 
-        proc = gdb.inferiors()[0]
+        self.proc = gdb.inferiors()[0]
 
     def invoke(self, arg, from_tty):
-        unmask_jemalloc.arenas()
+        unmask_jemalloc.dump_arenas(proc = self.proc)
 
 class jemalloc_runs(gdb.Command):
-    '''Dump info on jemalloc current runs'''
+    '''Dump info on jemalloc runs'''
 
     def __init__(self):
         gdb.Command.__init__(self, 'jeruns', gdb.COMMAND_OBSCURE)
@@ -87,40 +89,52 @@ class jemalloc_runs(gdb.Command):
         self.proc = gdb.inferiors()[0]
 
     def invoke(self, arg, from_tty):
-        unmask_jemalloc.runs(self.proc)
+        arg = arg.split()
+
+        if len(arg) >= 1 and arg[0] == '-c':
+            current_runs = true
+        else:
+            current_runs = false
+
+        unmask_jemalloc.dump_runs(dump_current_runs = current_runs, \
+                proc = self.proc)
 
 class jemalloc_bins(gdb.Command):
     '''Dump info on jemalloc bins'''
 
     def __init__(self):
-        global proc
         gdb.Command.__init__(self, 'jebins', gdb.COMMAND_OBSCURE)
 
-        proc = gdb.inferiors()[0]
+        self.proc = gdb.inferiors()[0]
 
     def invoke(self, arg, from_tty):
-        unmask_jemalloc.bins()
+        unmask_jemalloc.dump_bins(proc = self.proc)
 
 class jemalloc_regions(gdb.Command):
     '''Dump all current regions of the given size class'''
 
     def __init__(self):
-        global proc
         gdb.Command.__init__(self, 'jeregions', gdb.COMMAND_OBSCURE)
 
-        proc = gdb.inferiors()[0]
+        self.proc = gdb.inferiors()[0]
 
     def invoke(self, arg, from_tty):
-        unmask_jemalloc.regions()
+
+        if arg == '':
+            print('[unmask_jemalloc] usage: jeregions <size class>')
+            print('[unmask_jemalloc] for example: jeregions 1024')
+            return
+
+        size_class = int(arg)
+        unmask_jemalloc.dump_regions(size_class, proc = self.proc)
 
 class jemalloc_search(gdb.Command):
     '''Search the jemalloc heap for the given hex value'''
 
     def __init__(self):
-        global proc
         gdb.Command.__init__(self, 'jesearch', gdb.COMMAND_OBSCURE)
 
-        proc = gdb.inferiors()[0]
+        self.proc = gdb.inferiors()[0]
 
     def invoke(self, arg, from_tty):
         if arg == '':
@@ -137,7 +151,8 @@ class jemalloc_search(gdb.Command):
             current_runs = false
             search_for = arg[0]
 
-        unmask_jemalloc.search(search_for, search_current_runs = current_runs)
+        unmask_jemalloc.search(search_for, \
+                search_current_runs = current_runs, proc = self.proc)
 
 # required for classes that implement gdb commands
 jemalloc_parse()
