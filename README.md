@@ -5,8 +5,6 @@ A new version of the Firefox/jemalloc exploitation swiss army knife.
 
 Overview of the new design:
 
-<pre>
-
     +------------+
     | gdb_driver |
     +------------+
@@ -32,4 +30,3 @@ Overview of the new design:
             | gdb |
             +-----+
 
-</pre>
