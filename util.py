@@ -4,9 +4,7 @@ import sys
 import warnings
 import platform
 
-sys.path.append('.')
-
-INT_SIZE = 4        # on all tested platforms
+INT_SIZE = 4 # on all tested platforms
 
 def buf_to_le(buf):
     # this function is from seanhn's tcmalloc_gdb

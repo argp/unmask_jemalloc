@@ -10,7 +10,6 @@ Overview of the new design (read the arrow as "imports"):
     +------------+
           ^
           |
-          |
      +----------------+      +------+
      | unmask_jemalloc| <--- | util |
      +----------------+      +------+
