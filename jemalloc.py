@@ -4,6 +4,7 @@ import sys
 import warnings
 
 sys.path.append('.')
+
 import util
 
 VERSION = 'v0.8'
