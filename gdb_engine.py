@@ -41,4 +41,18 @@ def execute(expr):
 def read_memory(addr, size, proc):
     return proc.read_memory(addr, size)
 
+def search(start_addr, end_addr, dword):
+    search_expr = 'find %#x, %#x, %s'
+    results = []
+
+    search_str = search_expr % (start_addr, end_addr, dword)
+    out_str = gdb.execute(search_str, to_string = true)
+    str_results = out_str.split('\n')
+
+    for str_result in str_results:
+        if str_result.startswith('0x'):
+            results.append((str_result, start_addr))
+
+    return results
+
 # EOF
