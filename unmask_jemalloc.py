@@ -472,10 +472,10 @@ def dump_all(filename, dump_to_screen = true, proc = none):
             print('[unmask_jemalloc] error: file %s already exists' % (filename))
             return
 
-            try:
-                sys.stdout = open(filename, 'w')
-            except:
-                print('[unmask_jemalloc] error opening file %s for writing' % (filename))
+        try:
+            sys.stdout = open(filename, 'w')
+        except:
+            print('[unmask_jemalloc] error opening file %s for writing' % (filename))
             
     if parsed == false:
         parse(proc)
@@ -621,42 +621,26 @@ def search(search_for, search_current_runs = false, proc = none):
         for i in range(0, len(jeheap.arenas)):
             for j in range(0, len(jeheap.arenas[i].bins)):
                 try:
-                    out_str = dbg.execute('find %#x, %#x, %s' % \
-                            (jeheap.arenas[i].bins[j].run.start, \
-                            jeheap.arenas[i].bins[j].run.end, \
-                            search_for))
+                    results.extend(dbg.search(jeheap.arenas[i].bins[j].run.start, \
+                            jeheap.arenas[i].bins[j].run.end, search_for))
                 except:
                     continue
-    
-                str_results = out_str.split('\n')
-    
-                for str_result in str_results:
-                    if str_result.startswith('0x'):
-                        found = true
-                        results.append((str_result, jeheap.arenas[i].bins[j].run.start))
     else:
         print('[unmask_jemalloc] searching all chunks for %s' % (search_for))
 
         for chunk in jeheap.chunks:
             try:
-                out_str = dbg.execute('find %#x, %#x, %s' % \
-                        (chunk.addr, chunk.addr + jeheap.chunk_size, search_for))
+                results.extend(dbg.search(chunk.addr, \
+                        chunk.addr + jeheap.chunk_size, search_for))
             except:
                 continue
 
-            str_results = out_str.split('\n')
-    
-            for str_result in str_results:
-                if str_result.startswith('0x'):
-                    found = true
-                    results.append((str_result, chunk.addr))
-
-    if found == false:
+    if not results:
         print('[unmask_jemalloc] value %s not found' % (search_for))
         return
 
     for (what, where) in results:
-        if current_runs == true:
+        if search_current_runs == true:
             print('[unmask_jemalloc] found %s at %s (run %#x)' % \
                     (search_for, what, where))
         else:
