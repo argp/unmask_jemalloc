@@ -110,7 +110,7 @@ def parse_arenas():
 
         try:
             current_arena.addr = \
-                util.to_int(dbg.eval_expr('arenas[%d]' % (i)))
+                util.to_int(dbg.eval_expr(dbg.arena_expr % (i)))
         except:
             print('[unmask_jemalloc] error: cannot evaluate arenas[%d]') % (i)
             sys.exit()
@@ -123,35 +123,29 @@ def parse_arenas():
             end_addr = 0
 
             try:
-                expr = 'arenas[%d].bins[%d].reg_size' % (i, j)
-                reg_size = \
-                    util.to_int(dbg.eval_expr(expr))
+                expr = dbg.arena_reg_size_expr % (i, j)
+                reg_size = util.to_int(dbg.eval_expr(expr))
                
-                expr = 'arenas[%d].bins[%d].reg0_offset' % (i, j) 
-                reg_offset = \
-                    util.to_int(dbg.eval_expr(expr))
+                expr = dbg.arena_reg0_offset_expr % (i, j) 
+                reg_offset = util.to_int(dbg.eval_expr(expr))
 
             except RuntimeError:
                 # XXX: for now assume it's a standalone variant; we
                 #      need to do some error checking here too.
                 jeheap.STANDALONE = true
 
-                expr = 'arena_bin_info[%d].reg_size' % (j)
-                reg_size = \
-                    util.to_int(dbg.eval_expr(expr))
+                expr = dbg.arena_bin_info_reg_size_expr % (j)
+                reg_size = util.to_int(dbg.eval_expr(expr))
 
-                expr = 'arena_bin_info[%d].nregs' % (j)
-                nrg = \
-                    util.to_int(dbg.eval_expr(expr))
+                expr = dbg.arena_bin_info_nregs_expr % (j)
+                nrg = util.to_int(dbg.eval_expr(expr))
 
-                expr = 'arena_bin_info[%d].run_size' % (j)
-                run_sz = \
-                    util.to_int(dbg.eval_expr(expr))
+                expr = dbg.arena_bin_info_run_size_expr % (j)
+                run_sz = util.to_int(dbg.eval_expr(expr))
 
             try:
-                expr = 'arenas[%d].bins[%d].runcur' % (i, j)
-                runcur_addr = runcur = \
-                    util.to_int(dbg.eval_expr(expr))
+                expr = dbg.arena_runcur_expr % (i, j)
+                runcur_addr = runcur = util.to_int(dbg.eval_expr(expr))
 
                 end_addr = runcur_addr + run_sz
 
@@ -161,8 +155,9 @@ def parse_arenas():
                             int(reg_size), reg_offset, nrg, 0, [])
 
                     current_bin = jemalloc.arena_bin(0, j, current_run)
+
                     current_bin.addr = \
-                        util.to_int(dbg.eval_expr('&arenas[%d].bins[%d]' % (i, j)))
+                        util.to_int(dbg.eval_expr(dbg.arena_runcur_bin_expr % (i, j)))
 
                     current_arena.bins.append(current_bin)
 
@@ -213,7 +208,7 @@ def parse_all_runs(proc):
 
         try:
             # parse the whole map at once to avoid gdb's delays
-            expr = 'x/%d%sx ((arena_chunk_t *)%#x)->map' % \
+            expr = dbg.chunk_map_expr % \
                 (chunk_npages * chunk_map_dwords, dword_fmt, chunk.addr)
         except:
             print('[unmask_jemalloc] error: cannot read bitmap from chunk %#x' % (chunk.addr))
@@ -308,9 +303,8 @@ def parse_runs(proc):
             regs_mask_bits = \
                 (jeheap.arenas[i].bins[j].run.total_regions / 8) + 1
 
-            regs_mask_str = \
-                dbg.execute('x/%dbt arenas[%d].bins[%d].runcur.regs_mask' % \
-                    (regs_mask_bits, i, j))
+            expr = dbg.regs_mask_expr % (regs_mask_bits, i, j)
+            regs_mask_str = dbg.execute(expr)
 
             regs_mask = ''
 
@@ -364,13 +358,13 @@ def parse_chunks():
     jeheap.chunks[:] = []
 
     try:
-        root = util.to_int(dbg.get_value('chunk_rtree.root'))
-        height = util.to_int(dbg.get_value('chunk_rtree.height'))
+        root = util.to_int(dbg.get_value(dbg.chunk_rtree_root_expr))
+        height = util.to_int(dbg.get_value(dbg.chunk_rtree_height_expr))
 
         level2bits = []
 
         for i in range(0, height):
-            expr = 'chunk_rtree.level2bits[%d]' % (i)
+            expr = dbg.chunk_rtree_level2bits_expr % (i)
             level2bits.append(util.to_int(dbg.eval_expr(expr)))
     except:
         print('[unmask_jemalloc] error: cannot parse chunk radix tree')
@@ -387,7 +381,8 @@ def parse_chunks():
     while len(stack):
         (node, node_height) = stack.pop()
         child_cnt = 1 << level2bits[node_height]
-        dump = dbg.execute('x/%d%sx %#x' % (child_cnt, dw_fmt, node))
+        expr = dbg.chunk_radix_expr % (child_cnt, dw_fmt, node)
+        dump = dbg.execute(expr)
 
         for line in dump.split('\n'):
             line = line[line.find(':') + 1:]
@@ -398,7 +393,7 @@ def parse_chunks():
                 if address != 0:
                     # leaf nodes hold pointers to actual values
                     if node_height == height - 1:
-                        expr = '((arena_chunk_t *)%#x)->arena' % address
+                        expr = dbg.chunk_arena_expr % address
                         arena = util.to_int(dbg.eval_expr(expr))
  
                         exists = false
