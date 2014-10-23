@@ -25,7 +25,7 @@ arena_bin_info_reg_size_expr = 'arena_bin_info[%d].reg_size'
 arena_bin_info_nregs_expr = 'arena_bin_info[%d].nregs'
 arena_bin_info_run_size_expr = 'arena_bin_info[%d].run_size'
 arena_runcur_expr = 'arenas[%d].bins[%d].runcur'
-arena_runcur_bin_expr = '&arenas[%d].bins[%d]'
+arena_bin_addr_expr = '&arenas[%d].bins[%d]'
 
 # gdb expressions for parsing all runs and their regions
 chunk_map_expr = 'x/%d%sx ((arena_chunk_t *)%#x)->map'

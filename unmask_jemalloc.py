@@ -157,7 +157,7 @@ def parse_arenas():
                     current_bin = jemalloc.arena_bin(0, j, current_run)
 
                     current_bin.addr = \
-                        util.to_int(dbg.eval_expr(dbg.arena_runcur_bin_expr % (i, j)))
+                        util.to_int(dbg.eval_expr(dbg.arena_bin_addr_expr % (i, j)))
 
                     current_arena.bins.append(current_bin)
 
