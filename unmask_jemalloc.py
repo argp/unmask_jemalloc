@@ -358,8 +358,8 @@ def parse_chunks():
     jeheap.chunks[:] = []
 
     try:
-        root = util.to_int(dbg.get_value(dbg.chunk_rtree_root_expr))
-        height = util.to_int(dbg.get_value(dbg.chunk_rtree_height_expr))
+        root = util.to_int(dbg.eval_expr(dbg.chunk_rtree_root_expr))
+        height = util.to_int(dbg.eval_expr(dbg.chunk_rtree_height_expr))
 
         level2bits = []
 
