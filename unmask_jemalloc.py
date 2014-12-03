@@ -579,6 +579,9 @@ def dump_regions(size_class, proc = none):
     global jeheap
     global parsed
 
+    if parsed == false:
+        parse(proc)
+
     print('[unmask_jemalloc] dumping all regions of size class %d' % (size_class))
     found = false
 
