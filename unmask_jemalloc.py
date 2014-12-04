@@ -526,7 +526,7 @@ def dump_arenas(proc = none):
     global parsed
 
     if parsed == false:
-        parse(self.proc)
+        parse(proc)
 
     print(jeheap)
 
