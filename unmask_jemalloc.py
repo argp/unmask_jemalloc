@@ -611,7 +611,6 @@ def search(search_for, search_current_runs = false, proc = none):
         parse(proc)
 
     results = []
-    found = false
 
     if search_current_runs == true:
         print('[unmask_jemalloc] searching all current runs for %s' % (search_for))
@@ -637,12 +636,12 @@ def search(search_for, search_current_runs = false, proc = none):
         print('[unmask_jemalloc] value %s not found' % (search_for))
         return
 
-    for (what, where) in results:
+    for (where, start_addr) in results:
         if search_current_runs == true:
             print('[unmask_jemalloc] found %s at %s (run %#x)' % \
-                    (search_for, what, where))
+                    (search_for, where, start_addr))
         else:
             print('[unmask_jemalloc] found %s at %s (chunk %#x)' % \
-                    (search_for, what, where))
+                    (search_for, where, start_addr))
 
 # EOF
