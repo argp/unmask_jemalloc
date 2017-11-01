@@ -1,5 +1,8 @@
+Development of unmask_jemalloc has stopped; please use [shadow](https://github.com/CENSUS/shadow/) instead!
+===========================================================================================================
+
 De Mysteriis Dom jemalloc
-=========================
+-------------------------
 
 A new version of the Firefox/jemalloc exploitation swiss army knife.
 
