@@ -1,5 +1,8 @@
+Development of unmask_jemalloc has stopped; please use [shadow](https://github.com/CENSUS/shadow/) instead!
+===========================================================================================================
+
 unmask_jemalloc - De Mysteriis Dom jemalloc
-===========================================
+-------------------------------------------
 
 A gdb/Python extension to unmask and bring to light the internals of the
 various jemalloc flavors.
